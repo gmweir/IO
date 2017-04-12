@@ -165,10 +165,15 @@ class ReportInterface(object):
                 print('What?')
             # end try
     @classmethod
-    def __load_dict_from_hdf5__(cls, filename):
+    def __load_dict_from_hdf5__(cls, filename, path=None):
         """..."""
+        if path is None: 
+            path = '/'
+        else:
+            path = '/'+path
+        # end if
         with _h5.File(filename, 'r') as h5file:
-            return cls.__recursively_load_dict_contents_from_group__(h5file, '/')
+            return cls.__recursively_load_dict_contents_from_group__(h5file, path)
 
     @classmethod
     def __iteratively_load_dict_contents_from_list__(cls, h5file, path):
@@ -219,9 +224,9 @@ class ReportInterface(object):
 
 # -------------------------------------------------------------------------- #
 
-def loadHDF5data(sfilename, sepfield=False, verbose=True):
+def loadHDF5data(sfilename, path=None, sepfield=False, verbose=True):
 
-    HDF5data = ReportInterface.__load_dict_from_hdf5__(sfilename)    
+    HDF5data = ReportInterface.__load_dict_from_hdf5__(sfilename, path)    
 
     if verbose:
         print('### Successfully loaded dictionary from HDF5 file ###')              
