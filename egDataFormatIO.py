@@ -14,9 +14,10 @@ __metaclass__ = type
 # -------------------------------------------------------------------------- #
 
 
-from time import gmtime, strftime
-import re
-import sys
+from time import gmtime as _gmtime
+from time import strftime as _strftime
+import re as _re
+import sys as _sys
 import numpy as _np
 # from ..utils import Struct
 from pybaseutils.utils import Struct
@@ -72,14 +73,14 @@ class egDataFormatIO(Struct):
       
    def readData(self, filename=None):
       if filename is None :
-         self.data = _np.loadtxt(sys.stdin, comments='#', delimiter=',')
+         self.data = _np.loadtxt(_sys.stdin, comments='#', delimiter=',')
       else :
          self.data = _np.loadtxt(filename, comments='#', delimiter=',')
     
    def readHeader(self, filename=None):
       parametersFlg = False
       commentsFlg = False
-      reobjBlock = re.compile(r'\s*\[(.+)\]\s*')
+      reobjBlock = _re.compile(r'\s*\[(.+)\]\s*')
       params=[]
       numcom = 0
       self.DimSize  = []
@@ -89,7 +90,7 @@ class egDataFormatIO(Struct):
       self.ValUnit  = []
       self.comments = [] 
       if filename is None :
-         for line in sys.stdin :
+         for line in _sys.stdin :
             if line[0] == "#":        
                matchblock = reobjBlock.match(line[1:])
                if matchblock:
@@ -141,9 +142,9 @@ class egDataFormatIO(Struct):
          fp.close()
       self.parseLines(params)
       numcom = len(self.comments)
-      for i in range(numcom-1,-1,-1) :
-         if len(self.comments[i]) == 0 :
-            self.comments.pop(i)
+      for ii in range(numcom-1,-1,-1) :
+         if len(self.comments[ii]) == 0 :
+            self.comments.pop(ii)
          else:
             break
 
@@ -152,7 +153,7 @@ class egDataFormatIO(Struct):
       parsing a line of headder and getting the size of the data.
       """
 
-      reobjItem  = re.compile(r'(.+)\s*=\s*(.+)')
+      reobjItem  = _re.compile(r'(.+)\s*=\s*(.+)')
       for line in params:
          matchitem = reobjItem.match(line)
          if matchitem:
@@ -174,33 +175,33 @@ class egDataFormatIO(Struct):
             if 'DIMNO' == key:
                self.DimNo = int(val)
             if 'DIMSIZE' == key:
-               for i in range(self.DimNo):
+               for ii in range(self.DimNo):
                   clm = val.split(',')
-                  self.DimSize.append(int(clm[i]))
+                  self.DimSize.append(int(clm[ii]))
             if 'DIMNAME' == key:
-               for i in range(self.DimNo):
+               for ii in range(self.DimNo):
                   clm = val.split(',')
-                  clmd = clm[i].strip()
+                  clmd = clm[ii].strip()
                   clmd = clmd.strip('\'')
                   self.DimName.append(clmd)
             if 'DIMUNIT' == key:
-               for i in range(self.DimNo):
+               for ii in range(self.DimNo):
                   clm = val.split(',')
-                  clmd = clm[i].strip()
+                  clmd = clm[ii].strip()
                   clmd = clmd.strip('\'')
                   self.DimUnit.append(clmd)
             if 'VALNO' == key:
                self.ValNo = int(val)
             if 'VALNAME' == key:
-               for i in range(self.ValNo):
+               for ii in range(self.ValNo):
                   clm = val.split(',')
-                  clmd = clm[i].strip()
+                  clmd = clm[ii].strip()
                   clmd = clmd.strip('\'')
                   self.ValName.append(clmd)
             if 'VALUNIT' == key:
-               for i in range(self.ValNo):
+               for ii in range(self.ValNo):
                   clm = val.split(',')
-                  clmd = clm[i].strip()
+                  clmd = clm[ii].strip()
                   clmd = clmd.strip('\'')
                   self.ValUnit.append(clmd)
 
@@ -212,24 +213,24 @@ class egDataFormatIO(Struct):
       self.writeData(filename, datafmt)
 
    def writeHeader(self, filename=None):
-      self.Date = strftime("%m/%d/%Y %H:%M", gmtime())
-      for i in range(self.DimNo):
-         if i == 0:
-            dimname = "'%s'" % self.DimName[i]
-            dimsize = "%d" % self.DimSize[i]
-            dimunit = "'%s'" % self.DimUnit[i]
+      self.Date = _strftime("%m/%d/%Y %H:%M", _gmtime())
+      for ii in range(self.DimNo):
+         if ii == 0:
+            dimname = "'%s'" % self.DimName[ii]
+            dimsize = "%d" % self.DimSize[ii]
+            dimunit = "'%s'" % self.DimUnit[ii]
          else:
-            dimname = dimname + ", '%s'" % self.DimName[i]
-            dimsize = dimsize + ", %d" % self.DimSize[i]
-            dimunit = dimunit + ", '%s'" % self.DimUnit[i]
+            dimname = dimname + ", '%s'" % self.DimName[ii]
+            dimsize = dimsize + ", %d" % self.DimSize[ii]
+            dimunit = dimunit + ", '%s'" % self.DimUnit[ii]
 
-      for i in range(self.ValNo):
-         if i == 0:
-            valname = "'%s'" % self.ValName[i]
-            valunit = "'%s'" % self.ValUnit[i]
+      for ii in range(self.ValNo):
+         if ii == 0:
+            valname = "'%s'" % self.ValName[ii]
+            valunit = "'%s'" % self.ValUnit[ii]
          else:
-            valname = valname + ", '%s'" % self.ValName[i]
-            valunit = valunit + ", '%s'" % self.ValUnit[i]         
+            valname = valname + ", '%s'" % self.ValName[ii]
+            valunit = valunit + ", '%s'" % self.ValUnit[ii]         
 
       if filename is None :
          print("# [Parameters]")
@@ -279,7 +280,7 @@ class egDataFormatIO(Struct):
 
    def writeData(self, filename=None, datafmt='%.6E'):
       if filename is None :
-         _np.savetxt(sys.stdout, self.data, delimiter=", ", fmt=datafmt)
+         _np.savetxt(_sys.stdout, self.data, delimiter=", ", fmt=datafmt)
       else :
          fp = open(filename, 'a')
          _np.savetxt(fp, self.data, delimiter=", ", fmt=datafmt)
@@ -287,23 +288,23 @@ class egDataFormatIO(Struct):
 
    def writeTitle(self, filename=None, datafmt='%.6E'):
       if len(self.DimUnit[0]) > 0 :
-         for i in range(self.DimNo) :
-            if i == 0:
-               title = "%s(%s)" % (self.DimName[i], self.DimUnit[i])
+         for ii in range(self.DimNo) :
+            if ii == 0:
+               title = "%s(%s)" % (self.DimName[ii], self.DimUnit[ii])
             else:
-               title = title + ", %s(%s)" % (self.DimName[i], self.DimUnit[i])
+               title = title + ", %s(%s)" % (self.DimName[ii], self.DimUnit[ii])
       else :
-         for i in range(self.DimNo) :
-            if i == 0:
-               title = self.DimName[i]
+         for ii in range(self.DimNo) :
+            if ii == 0:
+               title = self.DimName[ii]
             else:
-               title = title + ", %s" % self.DimName[i]
+               title = title + ", %s" % self.DimName[ii]
       if len(self.ValUnit[0]) > 0 :
-         for i in range(self.ValNo):
-            title = title + ", %s(%s)" % (self.ValName[i], self.ValUnit[i])
+         for ii in range(self.ValNo):
+            title = title + ", %s(%s)" % (self.ValName[ii], self.ValUnit[ii])
       else :
-         for i in range(self.ValNo):
-            title = title + ", %s" % self.ValName[i]
+         for ii in range(self.ValNo):
+            title = title + ", %s" % self.ValName[ii]
       if filename is None :
          print(title)
       else :
@@ -328,8 +329,8 @@ class egDataFormatIO(Struct):
 
    def getDimData(self,dimid=0):
       if self.DimNo > 7 :
-         sys.exit('egDataFormatIO support dimno < 8') 
-         sys.exit(-1)
+         _sys.exit('egDataFormatIO support dimno < 8') 
+         _sys.exit(-1)
       if self.DimNo == 1 :
          dim = self.data[:,dimid]
       elif self.DimNo == 2 :
@@ -349,8 +350,8 @@ class egDataFormatIO(Struct):
    def getValData(self,valid=0):
       indx = self.DimNo + valid
       if self.DimNo > 7 :
-         sys.exit('egDataFormatIO support dimno < 8') 
-         sys.exit(-1)
+         _sys.exit('egDataFormatIO support dimno < 8') 
+         _sys.exit(-1)
       if self.DimNo == 1 :
          val = self.data[:,indx]
       elif self.DimNo == 2 :
@@ -387,7 +388,7 @@ class egDataFormatIO(Struct):
       self.Name     = source.Name
       self.ShotNo   = source.ShotNo
       self.SubNo    = source.SubNo
-      self.Date     = strftime("%m/%d/%Y %H:%M", gmtime())
+      self.Date     = _strftime("%m/%d/%Y %H:%M", _gmtime())
       self.DimName.append(source.DimName)
       self.DimName.append(yname)
       self.DimUnit.append(source.DimUnit)
@@ -411,7 +412,7 @@ class egDataFormatIO(Struct):
       self.Name     = source.Name
       self.ShotNo   = source.ShotNo
       self.SubNo    = source.SubNo
-      self.Date     = strftime("%m/%d/%Y %H:%M", gmtime())
+      self.Date     = _strftime("%m/%d/%Y %H:%M", _gmtime())
       self.DimName  = [source.DimName[idx-1]]
       self.DimUnit  = [source.DimUnit[idx-1]]
       self.ValName  = []
@@ -420,26 +421,26 @@ class egDataFormatIO(Struct):
       if idx == 1 :
          xx = source.getDimData(dimid=idx-1)
          yy = source.getDimData(dimid=idy-1)
-         for i in range(nz):
-            self.data[:,i+1::nz] = source.getValData(valid=idz[i]-1)
+         for ii in range(nz):
+            self.data[:,ii+1::nz] = source.getValData(valid=idz[ii]-1)
       else :
          xx = source.getDimData(dimid=idx).transpose()
          yy = source.getDimData(dimid=idy).transpose()
-         for i in range(nz):
-            self.data[:,i+1::nz] = source.getValData(valid=idz[i]-1).transpose()
+         for ii in range(nz):
+            self.data[:,ii+1::nz] = source.getValData(valid=idz[ii]-1).transpose()
 
       self.data[:,0] = xx[:,0]
       for j in range(ny):
-         for i in range(nz) :
-            valname = source.ValName[idz[i]-1] + "@%.6E" % yy[0,j] + "(%s)" % source.DimUnit[idy-1]
+         for ii in range(nz) :
+            valname = source.ValName[idz[ii]-1] + "@%.6E" % yy[0,j] + "(%s)" % source.DimUnit[idy-1]
             self.ValName.append(valname)
-            self.ValUnit.append(source.ValUnit[idz[i]-1])
+            self.ValUnit.append(source.ValUnit[idz[ii]-1])
 
    def addLog(self):
-      argvs = sys.argv 
-      command = "%s " % strftime("%B-%d-%Y %H:%M", gmtime())
-      for i in range(len(argvs)):
-         command = command + " " + argvs[i]
+      argvs = _sys.argv 
+      command = "%s " % _strftime("%B-%d-%Y %H:%M", _gmtime())
+      for ii in range(len(argvs)):
+         command = command + " " + argvs[ii]
       self.comments.append("   ")
       self.comments.append(command)
 
