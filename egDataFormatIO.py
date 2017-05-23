@@ -34,38 +34,35 @@ class egDataFormatIO(Struct):
        eg = egDataFormatIO()
        eg.readFile('temp.dat')
    """
+   
+   
    def __init__(self, filename=None):
       if filename is None :
-         self.Name     = ''
-         self.ShotNo   = 0
-         self.SubNo    = 0
-         self.Date     = ''
-         self.DimNo    = 0
-         self.DimSize  = []
-         self.DimName  = []
-         self.DimUnit  = []
-         self.ValNo    = 0
-         self.ValName  = []
-         self.ValUnit  = []
-         self.comments = []     
+         self.new()
       else : 
          self.readFile(filename)    
+   # end __init__
 
-   def new(self, dimno=1, valno=1, dimsize=[]):
-      self.Name = ''
+         
+   def new(self, dimno=1, valno=1, dimsize=[float()]):
+      """
+      The 'new' function initializes the necessary variables to write an empty 
+      'LHD format' text file.  See 'writeHeader' for specifics of LHD Format.
+      """
+      self.Name = ''        # Name of the 
       self.ShotNo = 0
       self.SubNo = 0
       self.Date = ''
       self.DimNo = dimno
-      self.DimSize = dimsize
-      self.DimName=[]
-      self.DimUnit=[]
-      self.ValNo = valno
-      n = _np.prod(self.DimSize)
-      self.ValName=[]
-      self.ValUnit=[]
-      self.comments = []  
-      self.data = _np.zeros((n,dimno+valno))
+      self.DimSize = dimsize # [list of ints], the number of dimensions of the data  
+      self.DimName=[str()]  # [str], a descriptive name of the dimensions
+      self.DimUnit=[str()]  # [str], Units of data in each dimension
+      self.ValNo = valno  # [int], the number of 'Values' saved (data sets)  
+      n = _np.prod(self.DimSize)  # [str], the total length of the data from this Value after reshaping to a vector
+      self.ValName=[str()]  # [list of str's], a descriptive name for each value saved in data
+      self.ValUnit=[str()]  # [list of str's], the units of each value
+      self.comments = [str()]  # [list of str's], any useful comments 
+      self.data = _np.zeros((n,dimno+valno))   # The data to be written
 
    def readFile(self, filename=None):
       self.readHeader(filename)
@@ -447,4 +444,5 @@ class egDataFormatIO(Struct):
 
 if __name__=="__main__":
     eg = egDataFormatIO()
+    eg.writeFile()    
     eg.writeFile('temp.dat')

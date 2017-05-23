@@ -13,6 +13,7 @@ from __future__ import absolute_import, with_statement, absolute_import, \
 import numpy as _np
 import h5py as _h5
 import os as _os
+
 #from scipy.io import savemat #,loadmat,whosmat
 from pybaseutils.utils import Struct
 
@@ -241,8 +242,10 @@ def loadHDF5data(sfilename, path=None, sepfield=False, verbose=True):
     return HDF5data
 #end def load_HDF5
     
+    
 # -------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------- #    
+
 
 def test():
     ex = {
