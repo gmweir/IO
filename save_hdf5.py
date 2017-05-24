@@ -15,7 +15,7 @@ import h5py as _h5
 import os as _os
 
 #from scipy.io import savemat #,loadmat,whosmat
-from pybaseutils.utils import Struct
+import pybaseutils as _pyut
 
 __metaclass__ = type
 
@@ -119,7 +119,7 @@ class ReportInterface(object):
                     cls.__recursively_save_dict_contents_to_group__(grp, item)
     
                 # other types cannot be saved and will result in an error
-                elif isinstance(item, (Struct, )):
+                elif isinstance(item, (_pyut.Struct, )):
                     print('Structure:', h5file, key)                
     #                print('Skipping the user defined class with internal methods')
                     grp = h5file[key] if key in h5file else h5file.create_group(key)                                

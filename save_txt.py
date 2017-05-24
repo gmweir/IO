@@ -6,10 +6,10 @@ Created on Fri Oct  7 10:23:56 2016
 """
 
 import numpy as _np
-from pybaseutils.utils import Struct
+import pybaseutils as _pyut
 import os as _os
 
-class txtdata(Struct):
+class txtdata(_pyut.Struct):
     """
     Class for saving data to a text file
     - sfilname - str - File name (one txt file) 
