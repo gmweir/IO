@@ -19,9 +19,11 @@ from time import strftime as _strftime
 import re as _re
 import sys as _sys
 import numpy as _np
-import pybaseutils as _pyut
 
-class egDataFormatIO(_pyut.Struct):
+#import pybaseutils as _pyut
+from ..Struct import Struct
+
+class egDataFormatIO(Struct):
    """
    egDataFormatIO() is pure python module for parsing eg data-format file.
 
