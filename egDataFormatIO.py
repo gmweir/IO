@@ -6,7 +6,7 @@ from __future__ import absolute_import, with_statement, absolute_import, \
                        division, print_function, unicode_literals
 
 __metaclass__ = type
-    
+
 # note on python 2 and python 3 compatability:
 # in py2: print >> fp, s    prints string "s" to text file fp
 # in py3: print(s, file=fp) ... print(s, end="\n", file=fp) (end="\n" default)
@@ -21,13 +21,14 @@ import sys as _sys
 import numpy as _np
 
 #import pybaseutils as _pyut
-from ..Struct import Struct
+from pybaseutils.Struct import Struct
 
 class egDataFormatIO(Struct):
+#class egDataFormatIO(object):
    """
    egDataFormatIO() is pure python module for parsing eg data-format file.
 
-   if you want to open 'temp.dat', make instance of the file with edgb(), 
+   if you want to open 'temp.dat', make instance of the file with edgb(),
    and then call readFile() method.
    ex)
        eg = egDataFormatIO('temp.dat')
@@ -35,46 +36,46 @@ class egDataFormatIO(Struct):
        eg = egDataFormatIO()
        eg.readFile('temp.dat')
    """
-   
-   
+
+
    def __init__(self, filename=None):
       if filename is None :
          self.new()
-      else : 
-         self.readFile(filename)    
+      else :
+         self.readFile(filename)
    # end __init__
 
-         
+
    def new(self, dimno=1, valno=1, dimsize=[float()]):
       """
-      The 'new' function initializes the necessary variables to write an empty 
+      The 'new' function initializes the necessary variables to write an empty
       'LHD format' text file.  See 'writeHeader' for specifics of LHD Format.
       """
-      self.Name = ''        # Name of the 
+      self.Name = ''        # Name of the
       self.ShotNo = 0
       self.SubNo = 0
       self.Date = ''
       self.DimNo = dimno
-      self.DimSize = dimsize # [list of ints], the number of dimensions of the data  
+      self.DimSize = dimsize # [list of ints], the number of dimensions of the data
       self.DimName=[str()]  # [str], a descriptive name of the dimensions
       self.DimUnit=[str()]  # [str], Units of data in each dimension
-      self.ValNo = valno  # [int], the number of 'Values' saved (data sets)  
+      self.ValNo = valno  # [int], the number of 'Values' saved (data sets)
       n = _np.prod(self.DimSize)  # [str], the total length of the data from this Value after reshaping to a vector
       self.ValName=[str()]  # [list of str's], a descriptive name for each value saved in data
       self.ValUnit=[str()]  # [list of str's], the units of each value
-      self.comments = [str()]  # [list of str's], any useful comments 
+      self.comments = [str()]  # [list of str's], any useful comments
       self.data = _np.zeros((n,dimno+valno))   # The data to be written
 
    def readFile(self, filename=None):
       self.readHeader(filename)
       self.readData(filename)
-      
+
    def readData(self, filename=None):
       if filename is None :
          self.data = _np.loadtxt(_sys.stdin, comments='#', delimiter=',')
       else :
          self.data = _np.loadtxt(filename, comments='#', delimiter=',')
-    
+
    def readHeader(self, filename=None):
       parametersFlg = False
       commentsFlg = False
@@ -86,10 +87,10 @@ class egDataFormatIO(Struct):
       self.DimUnit  = []
       self.ValName  = []
       self.ValUnit  = []
-      self.comments = [] 
+      self.comments = []
       if filename is None :
          for line in _sys.stdin :
-            if line[0] == "#":        
+            if line[0] == "#":
                matchblock = reobjBlock.match(line[1:])
                if matchblock:
                   key = matchblock.groups()[0].upper()
@@ -112,10 +113,10 @@ class egDataFormatIO(Struct):
             else:
                break
       else :
-         fp = open(filename, 'r') 
+         fp = open(filename, 'r')
          while 1:
             line = fp.readline()
-            if line[0] == "#":        
+            if line[0] == "#":
                matchblock = reobjBlock.match(line[1:])
                if matchblock:
                   key = matchblock.groups()[0].upper()
@@ -132,7 +133,7 @@ class egDataFormatIO(Struct):
                   if numcom == 0 :
                      numcom = 1
                   else:
-                     self.comments.append(line[1:].strip())                 
+                     self.comments.append(line[1:].strip())
                if parametersFlg:
                   params.append(line[1:].strip())
             else:
@@ -228,7 +229,7 @@ class egDataFormatIO(Struct):
             valunit = "'%s'" % self.ValUnit[ii]
          else:
             valname = valname + ", '%s'" % self.ValName[ii]
-            valunit = valunit + ", '%s'" % self.ValUnit[ii]         
+            valunit = valunit + ", '%s'" % self.ValUnit[ii]
 
       if filename is None :
          print("# [Parameters]")
@@ -273,7 +274,7 @@ class egDataFormatIO(Struct):
             print("# %s" % line, file=fp)
          print("# filename = %s (written by egDataFormatIO)" % filename, file=fp)
          print("#", file=fp)
-         print("# [Data]", file=fp)     
+         print("# [Data]", file=fp)
          fp.close()
 
    def writeData(self, filename=None, datafmt='%.6E'):
@@ -327,43 +328,43 @@ class egDataFormatIO(Struct):
 
    def getDimData(self,dimid=0):
       if self.DimNo > 7 :
-         _sys.exit('egDataFormatIO support dimno < 8') 
+         _sys.exit('egDataFormatIO support dimno < 8')
          _sys.exit(-1)
       if self.DimNo == 1 :
          dim = self.data[:,dimid]
       elif self.DimNo == 2 :
-         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1]) 
+         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1])
       elif self.DimNo == 3 :
-         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2]) 
+         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2])
       elif self.DimNo == 4 :
-         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3])    
+         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3])
       elif self.DimNo == 5 :
-         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4]) 
+         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4])
       elif self.DimNo == 6 :
-         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5]) 
+         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5])
       elif self.DimNo == 7 :
-         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5],self.DimSize[6])  
+         dim = self.data[:,dimid].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5],self.DimSize[6])
       return dim
 
    def getValData(self,valid=0):
       indx = self.DimNo + valid
       if self.DimNo > 7 :
-         _sys.exit('egDataFormatIO support dimno < 8') 
+         _sys.exit('egDataFormatIO support dimno < 8')
          _sys.exit(-1)
       if self.DimNo == 1 :
          val = self.data[:,indx]
       elif self.DimNo == 2 :
-         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1]) 
+         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1])
       elif self.DimNo == 3 :
-         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2]) 
+         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2])
       elif self.DimNo == 4 :
-         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3])  
+         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3])
       elif self.DimNo == 5 :
-         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4]) 
+         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4])
       elif self.DimNo == 6 :
-         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5]) 
+         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5])
       elif self.DimNo == 7 :
-         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5],self.DimSize[6])    
+         val = self.data[:,indx].reshape(self.DimSize[0],self.DimSize[1],self.DimSize[2],self.DimSize[3],self.DimSize[4],self.DimSize[5],self.DimSize[6])
       return val
 
    def setDimData(self,data,dimid=0):
@@ -371,7 +372,7 @@ class egDataFormatIO(Struct):
       if self.DimNo == 1 :
          self.data[:,dimid] = data
       elif self.DimNo > 1 :
-         self.data[:,dimid] = data.reshape(n) 
+         self.data[:,dimid] = data.reshape(n)
 
    def setValData(self,data,valid=0):
       indx = self.DimNo + valid
@@ -379,7 +380,7 @@ class egDataFormatIO(Struct):
       if self.DimNo == 1 :
          self.data[:,indx] = data
       elif self.DimNo > 1 :
-         self.data[:,indx] = data.reshape(n) 
+         self.data[:,indx] = data.reshape(n)
 
    def convert1to2(self, source, ydata, yname="", yunit="", zname="", zunit=""):
       self.new(dimno=2, valno=1, dimsize=[source.DimSize[0],source.ValNo])
@@ -403,8 +404,8 @@ class egDataFormatIO(Struct):
       idy = 2
       if idx == 2 :
          idy = 1
-      nx = source.DimSize[idx-1] 
-      ny = source.DimSize[idy-1] 
+      nx = source.DimSize[idx-1]
+      ny = source.DimSize[idy-1]
       nz = len(idz)
       self.new(dimno=1, valno=ny*nz, dimsize=[nx])
       self.Name     = source.Name
@@ -435,7 +436,7 @@ class egDataFormatIO(Struct):
             self.ValUnit.append(source.ValUnit[idz[ii]-1])
 
    def addLog(self):
-      argvs = _sys.argv 
+      argvs = _sys.argv
       command = "%s " % _strftime("%B-%d-%Y %H:%M", _gmtime())
       for ii in range(len(argvs)):
          command = command + " " + argvs[ii]
@@ -445,5 +446,5 @@ class egDataFormatIO(Struct):
 
 if __name__=="__main__":
     eg = egDataFormatIO()
-    eg.writeFile()    
+    eg.writeFile()
     eg.writeFile('temp.dat')

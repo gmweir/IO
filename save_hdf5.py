@@ -15,8 +15,8 @@ import h5py as _h5
 import os as _os
 
 #from scipy.io import savemat #,loadmat,whosmat
-from ..Struct import Struct
-#from pybaseutils.Struct import Struct
+#from ..Struct import Struct
+from pybaseutils.Struct import Struct
 
 __metaclass__ = type
 
