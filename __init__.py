@@ -12,14 +12,15 @@ from __future__ import absolute_import, with_statement, absolute_import, \
 # ========================================================================== #    
 # ========================================================================== #    
 
-__version__ = "2017.03.02.23"
-__all__ = ['egDataFormatIO','save_hdf5'] #, 'save_txt']
+__version__ = "2018.05.24.17"
+__all__ = ['egDataFormatIO','save_hdf5', 'fdf'] #, 'save_txt']
 
-from . import egDataFormatIO, save_hdf5 #save_txt  # analysis:ignore
+from . import egDataFormatIO, save_hdf5, fdf #save_txt  # analysis:ignore
 
 from .save_hdf5 import ReportInterface as saveHDF5  # analysis:ignore
 from .save_hdf5 import loadHDF5data as loadHDF5  # analysis:ignore
 from .egDataFormatIO import egDataFormatIO as eg  # analysis:ignore
+from fdf import Fdf as fdf # analysis:ignore
 
 # ===================================================================== #
 # ===================================================================== #
