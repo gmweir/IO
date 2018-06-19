@@ -20,7 +20,7 @@ from . import egDataFormatIO, save_hdf5, fdf #save_txt  # analysis:ignore
 from .save_hdf5 import ReportInterface as saveHDF5  # analysis:ignore
 from .save_hdf5 import loadHDF5data as loadHDF5  # analysis:ignore
 from .egDataFormatIO import egDataFormatIO as eg  # analysis:ignore
-from fdf import Fdf as fdf # analysis:ignore
+from .fdf import Fdf as fdf # analysis:ignore
 
 # ===================================================================== #
 # ===================================================================== #
