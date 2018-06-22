@@ -252,7 +252,7 @@ def test():
     ex = {
         'name': 'GMW\xb0' + chr(255),
         'exdict': {'str': 'new'},
-        'age':  _np.int64(29),
+        'age':  _np.int64(31),
         "90's BoyBand?": '98\xb0',
         'unicode': 'The reäl öüt: \xb1!'+ chr(255),
         'tricky': None,
@@ -266,7 +266,10 @@ def test():
             ]),
             'kronecker2d': _np.identity(3)
         },
-        'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}])
+        'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}]),
+        'nan': _np.nan,
+        'nan_array': _np.nan*_np.ones( (5,1), dtype=_np.float64),
+        'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1))
     }
     print('ex')
     filename = 'foo.hdf5'
@@ -281,7 +284,6 @@ def test():
     print('loaded using built-in function')
     _np.testing.assert_equal(loaded, ex)
     print('check 1 passed!')
-
 
     loaded = loadHDF5data(filename, sepfield=False, verbose=True)
     print('loaded using wrapper function')
