@@ -216,8 +216,7 @@ class ReportInterface(object):
                     ans[key] = item.value
                 # endif
             elif len(key)>3 and key[0:4] == 'list':
-                ans = cls.__iteratively_load_dict_contents_from_list__(
-                                h5file, path)
+                ans = cls.__iteratively_load_dict_contents_from_list__(h5file, path)
 
             elif isinstance(item, _h5._hl.group.Group):
                 ans[key] = cls.__recursively_load_dict_contents_from_group__(
