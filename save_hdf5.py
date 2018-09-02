@@ -69,24 +69,32 @@ class ReportInterface(object):
 
     @classmethod
     def __fixlist(cls, item):
+        try:            item.tolist()
+        except:         pass
         if item is None:
             item = 'None'
-#       # Save string types
-        if isinstance(item, (str,)):
-            item = cls.__bytesit(item)
-        if isinstance(item, (int,)):
-            item = _np.int64(item)
-        if isinstance(item, (bool,)):
-            item = _np.uint8(item)
-        if isinstance(item, (float,)):
-            item = _np.float64(item)
-
         if isinstance(item,(list,)):
             # Go through each data type in the list
             item = [cls.__fixlist(ii) for ii in item]
             item = _np.asarray(item)
             item = _np.atleast_1d(item)
+        else:
+    #       # Save string types
+            try:
+                if _np.isnan(item):       item = 'NaN'      # end if
+            except:     pass
 
+            if isinstance(item, (str,)):
+                item = cls.__bytesit(item)
+            if isinstance(item, (type(_np.atleast_1d(_np.asarray(['w7x','w7x']))[0]),)):
+                item = cls.__bytesit(item)
+            if isinstance(item, (int,)):
+                item = _np.int64(item)
+            if isinstance(item, (bool,)):
+                item = _np.uint8(item)
+            if isinstance(item, (float,)):
+                item = _np.float64(item)
+        # end if
         return item
 
     @classmethod
@@ -126,6 +134,18 @@ class ReportInterface(object):
                     grp = h5file[key] if key in h5file else h5file.create_group(key)
                     cls.__recursively_save_dict_contents_to_group__(
                          grp, item.dict_from_class() )
+
+                elif isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0], (type(_np.atleast_1d(_np.asarray(['w7x','w7x']))[0]),)):
+                   # item = _np.atleast_1d(item)
+
+                   grp = h5file[key] if key in h5file else h5file.create_group(key)
+                   #cls.__recursively_save_dict_contents_to_group__(grp, item.tolist())
+                   for ii in range(len(item)):
+                       keyii = key + "/list" + str(ii) + "/"
+                       grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
+                       cls.__recursively_save_dict_contents_to_group__(grp, item[ii])
+#                       cls.__recursively_save_dict_contents_to_group__(grp, cls.__bytesit(item[ii]))
+                   # end for
 
                 elif isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0], (dict,)):
                    # item = _np.atleast_1d(item)
@@ -199,6 +219,8 @@ class ReportInterface(object):
                     # print(item.value)
                     if item.value == b'None':
                         ans[key] = None
+                    elif item.value == b'NaN':
+                        ans[key] = _np.nan
                     else:
                         ans[key] = cls.__unbytesit(item.value)
                     # endif
@@ -207,6 +229,8 @@ class ReportInterface(object):
                     for ii in item:
                         if ii == b'None':
                             tmp.append(None)
+                        elif ii == b'NaN':
+                            tmp.append(_np.nan)
                         else:
                             tmp.append(cls.__unbytesit(ii))
                         # end if
@@ -266,6 +290,7 @@ def test():
             'kronecker2d': _np.identity(3)
         },
         'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}]),
+        'strarray': _np.asarray(['w7x_ref_175', 'w7x_ref_175']),
         'nan': _np.nan,
         'nan_array': _np.nan*_np.ones( (5,1), dtype=_np.float64),
         'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1))
