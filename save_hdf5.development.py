@@ -5,8 +5,8 @@ Created on Tue Mar  8 17:32:02 2016
 @author: gawe
 """
 
-# -------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------- #
+# ========================================================================== #
+# ========================================================================== #
 from __future__ import absolute_import, with_statement, absolute_import, \
                        division, print_function, unicode_literals
 
@@ -15,16 +15,13 @@ import h5py as _h5
 import os as _os
 
 #from scipy.io import savemat #,loadmat,whosmat
-try:
-    from pybaseutils.Struct import Struct
-except:
-    from ..Struct import Struct
-# end try
+#from ..Struct import Struct
+from pybaseutils.Struct import Struct
 
 __metaclass__ = type
 
-# -------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------- #
+# ========================================================================== #
+# ========================================================================== #
 
 class ReportInterface(object):
 
@@ -72,24 +69,38 @@ class ReportInterface(object):
 
     @classmethod
     def __fixlist(cls, item):
+        try:            item.tolist()
+        except:         pass
         if item is None:
             item = 'None'
-#       # Save string types
-        if isinstance(item, (str,)):
-            item = cls.__bytesit(item)
-        if isinstance(item, (int,)):
-            item = _np.int64(item)
-        if isinstance(item, (bool,)):
-            item = _np.uint8(item)
-        if isinstance(item, (float,)):
-            item = _np.float64(item)
+#        if isinstance(item,(list,)):
+#            # Go through each data type in the list
+#            item = [cls.__fixlist(ii) for ii in item]
+#            item = _np.asarray(item)
+#            item = _np.atleast_1d(item)
+        # else:
+        if 1:
+    #       # Save string types
+#            try:
+#                if _np.isnan(item):       item = 'NaN'      # end if
+#            except:     pass
 
-        if isinstance(item,(list,)):
-            # Go through each data type in the list
-            item = [cls.__fixlist(ii) for ii in item]
-            item = _np.asarray(item)
-            item = _np.atleast_1d(item)
+            if isinstance(item, (str,_np.str_,type(b''),bytes)):
+                item = cls.__bytesit(item)
+            if isinstance(item, (int,)):
+                item = _np.int64(item)
+            if isinstance(item, (bool,)):
+                item = _np.uint8(item)
+            if isinstance(item, (float,)):
+                item = _np.float64(item)
 
+            if isinstance(item,(list,)):
+                # Go through each data type in the list
+                item = [cls.__fixlist(ii) for ii in item]
+                item = _np.asarray(item)
+                item = _np.atleast_1d(item)
+
+        # end if
         return item
 
     @classmethod
@@ -110,6 +121,7 @@ class ReportInterface(object):
             item = cls.__fixlist(item)
 
             try:
+#            if 1:
                 if isinstance(item, (bytes,)):
                     # save string types (byte-strings)
                     print(h5file, key, item)
@@ -125,7 +137,6 @@ class ReportInterface(object):
                 # other types cannot be saved and will result in an error
                 elif isinstance(item, (Struct, )):
                     print('Structure:', h5file, key)
-    #                print('Skipping the user defined class with internal methods')
                     grp = h5file[key] if key in h5file else h5file.create_group(key)
                     cls.__recursively_save_dict_contents_to_group__(
                          grp, item.dict_from_class() )
@@ -140,6 +151,18 @@ class ReportInterface(object):
                        cls.__recursively_save_dict_contents_to_group__(grp, item[ii])
                    # end for
 
+                elif isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0], (_np.str_,str,type(b''),bytes)):
+                   # item = _np.atleast_1d(item)
+
+                   grp = h5file[key] if key in h5file else h5file.create_group(key)
+                   #cls.__recursively_save_dict_contents_to_group__(grp, item.tolist())
+                   for ii in range(len(item)):
+                       keyii = key + "/list" + str(ii) + "/"
+                       grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
+#                       cls.__recursively_save_dict_contents_to_group__(grp, item[ii])
+                       cls.__recursively_save_dict_contents_to_group__(grp, cls.__bytesit(str(item[ii])))
+                   # end for
+
                 elif isinstance(item, (_np.ScalarType, _np.ndarray)):
                 # elif isinstance(item, (_np.ScalarType,)):
                     # print(key, item, type(key), type(item))
@@ -151,6 +174,15 @@ class ReportInterface(object):
                     # end if
 
                     h5file.create_dataset(key, data=item, dtype=item.dtype)
+#                    dtype = type(item)
+#                    if dtype ==_np.str_ or dtype==str:
+#                        item = cls.__bytesit(item)
+#                        dtype = type(item)
+#                    # end if
+#                    try:
+#                        h5file.create_dataset(key, data=item, dtype=dtype)
+#                    except:
+#                        pass
 
                     try:
                         if not _np.all(h5file[key].value == item):
@@ -198,18 +230,22 @@ class ReportInterface(object):
         ans = {}
         for key, item in h5file[path].items():
             if isinstance(item, _h5._hl.dataset.Dataset):
-                if isinstance(item.value, bytes):
+                if isinstance(item.value, bytes,_np.str_, str, ):
                     # print(item.value)
                     if item.value == b'None':
                         ans[key] = None
+                    elif item.value == b'NaN':
+                        ans[key] = _np.nan
                     else:
                         ans[key] = cls.__unbytesit(item.value)
                     # endif
-                elif isinstance(_np.atleast_1d(item.value)[0], bytes):
+                elif isinstance(_np.atleast_1d(item.value)[0], bytes,_np.str_, str, ):
                     tmp = []
                     for ii in item:
                         if ii == b'None':
                             tmp.append(None)
+                        elif ii == b'NaN':
+                            tmp.append(_np.nan)
                         else:
                             tmp.append(cls.__unbytesit(ii))
                         # end if
@@ -219,15 +255,14 @@ class ReportInterface(object):
                     ans[key] = item.value
                 # endif
             elif len(key)>3 and key[0:4] == 'list':
-                ans = cls.__iteratively_load_dict_contents_from_list__(
-                                h5file, path)
+                ans = cls.__iteratively_load_dict_contents_from_list__(h5file, path)
 
             elif isinstance(item, _h5._hl.group.Group):
                 ans[key] = cls.__recursively_load_dict_contents_from_group__(
                                 h5file, path + '/' + key + '/')
         return ans
 
-# -------------------------------------------------------------------------- #
+# ========================================================================== #
 
 def loadHDF5data(sfilename, path=None, sepfield=False, verbose=True):
 
@@ -247,15 +282,15 @@ def loadHDF5data(sfilename, path=None, sepfield=False, verbose=True):
 #end def load_HDF5
 
 
-# -------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------- #
+# ========================================================================== #
+# ========================================================================== #
 
 
 def test():
     ex = {
         'name': 'GMW\xb0' + chr(255),
         'exdict': {'str': 'new'},
-        'age':  _np.int64(29),
+        'age':  _np.int64(31),
         "90's BoyBand?": '98\xb0',
         'unicode': 'The reäl öüt: \xb1!'+ chr(255),
         'tricky': None,
@@ -269,7 +304,11 @@ def test():
             ]),
             'kronecker2d': _np.identity(3)
         },
-        'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}])
+        'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}]),
+        'strarray': _np.asarray(['w7x_ref_175', 'w7x_ref_175']),
+        'nan': _np.nan,
+        'nan_array': _np.nan*_np.ones( (5,1), dtype=_np.float64),
+        'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1))
     }
     print('ex')
     filename = 'foo.hdf5'
@@ -285,7 +324,6 @@ def test():
     _np.testing.assert_equal(loaded, ex)
     print('check 1 passed!')
 
-
     loaded = loadHDF5data(filename, sepfield=False, verbose=True)
     print('loaded using wrapper function')
     _np.testing.assert_equal(loaded, ex)
@@ -298,6 +336,6 @@ if __name__ == "__main__":
     ex, loaded = test()
 # endif
 
-# -------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------- #
+# ========================================================================== #
+# ========================================================================== #
 
