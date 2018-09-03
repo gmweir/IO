@@ -83,7 +83,9 @@ class ReportInterface(object):
             item = _np.uint8(item)
         if isinstance(item, (float,)):
             item = _np.float64(item)
-
+#        if isinstance(item, (type(_np.nan)))
+        if isinstance(item, (_np.ndarray,)): # and isinstance(_np.atleast_1d(item)[0],(_np.str_,)):
+            item = [cls.__fixlist(ii) for ii in item] #item.tolist()
         if isinstance(item,(list,)):
             # Go through each data type in the list
             item = [cls.__fixlist(ii) for ii in item]
@@ -269,7 +271,11 @@ def test():
             ]),
             'kronecker2d': _np.identity(3)
         },
-        'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}])
+        'dictarray': _np.array([{'a':1,'b':2}, {'soup':10,'weasel':-10}]),
+        'strarray': _np.asarray(['w7x_ref_175', 'w7x_ref_175']),
+        'nan': _np.nan,
+        'nan_array': _np.nan*_np.ones( (5,1), dtype=_np.float64),
+        'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1))
     }
     print('ex')
     filename = 'foo.hdf5'
