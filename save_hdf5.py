@@ -84,7 +84,7 @@ class ReportInterface(object):
         if isinstance(item, (float,)):
             item = _np.float64(item)
 #        if isinstance(item, (type(_np.nan)))
-        if isinstance(item, (_np.ndarray,)): # and isinstance(_np.atleast_1d(item)[0],(_np.str_,)):
+        if isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0],(_np.str_,)):
             item = [cls.__fixlist(ii) for ii in item] #item.tolist()
         if isinstance(item,(list,)):
             # Go through each data type in the list
