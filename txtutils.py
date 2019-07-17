@@ -29,15 +29,26 @@ def getv(s=''):
     If the first non-whitespace is not valid number characters
     '(+-.0123456789', then the line will be skipped.
     """
-    if s == '':
-        f = sys.stdin
-    else:
-        f = open(s, 'r')
-    x = []
-    for a in f:
-        a = a.strip()
-        if a != '' and a[0] in '(+-.0123456789':
-            x.append(eval(a))
+    try:
+        if s == '':
+            fid = sys.stdin
+        else:
+            fid = open(s, 'r')
+        # end if
+
+        x = []
+        for a in fid:
+            a = a.strip()
+            if a != '' and a[0] in '(+-.0123456789':
+                x.append(eval(a))
+            # end if
+        # end for
+    except:
+        raise
+    finally:
+        try: fid.close()
+        except: pass
+    # end try
     return x
 # end def getv
 
@@ -47,20 +58,30 @@ def getv2(s=''):
     If the first non-whitespace is not valid number characters
     '(+-.0123456789', then the line will be skipped.
     """
-    if s == '':
-        f = sys.stdin
-    else:
-        f = open(s, 'r')
-    x, y = [], []
-    for a in f:
-        a = a.strip()
-        if a != '' and a[0] in '(+-.0123456789':
-            b = a.split()
-            x.append(eval(b[0]))
-            y.append(eval(b[1]))
+    try:
+        if s == '':
+            fid = sys.stdin
+        else:
+            fid = open(s, 'r')
+        # end if
+        x, y = [], []
+        for a in fid:
+            a = a.strip()
+            if a != '' and a[0] in '(+-.0123456789':
+                b = a.split()
+                x.append(eval(b[0]))
+                y.append(eval(b[1]))
+            # end if
+        # end for
+    except:
+        raise
+    finally:
+        try: fid.close()
+        except: pass
+    # end try
     return x, y
 # end def getv2# ========================================================================== #
-    
+
 
 def printv(x, s=''):
     """
@@ -72,8 +93,17 @@ def printv(x, s=''):
     if s == '':
         sys.stdout.write(out)
     else:
-        open(s, 'w').write(out)
-# end def printv      
+        try:
+            fid = open(s, 'w')
+            fid.write(out)
+        except:
+            raise
+        finally:
+            fid.close()
+        # end try
+    # end if
+
+# end def printv
 
 
 # ========================================================================== #
@@ -85,18 +115,18 @@ def printv(x, s=''):
 #class txtdata(_pyut.Struct):
 #    """
 #    Class for saving data to a text file
-#    - sfilname - str - File name (one txt file) 
-#            OR - list - List of file names (multiple txt files) 
+#    - sfilname - str - File name (one txt file)
+#            OR - list - List of file names (multiple txt files)
 #    - datain   - object - data structure
 #            OR - list - List of data structures (multiple txt files)
 #    """
 #    def __init__(self, sfilname=None, datain=None):
 #        self.sfilname = sfilname
 #        self.data = datain
-#        if (sfilname is not None) and (datain is not None):        
+#        if (sfilname is not None) and (datain is not None):
 #            self.__runsav__()
 #        # endif
-#    # end def __init__        
+#    # end def __init__
 #
 #    def __runsav__(self):
 #        if isinstance(sfilname, list):
@@ -107,7 +137,7 @@ def printv(x, s=''):
 #            self.savall(sfilname, datain)
 #        # endif
 #    # end def __runsav__
-#            
+#
 ##    def mkfil(self, sfil):
 ##        """
 ##        Make the text file that will hold data
@@ -115,16 +145,16 @@ def printv(x, s=''):
 ##            sfil - str - text file name
 ##        output:
 ##            hfil - handle - Handle to open text file
-##        """            
-##        
+##        """
+##
 ##        return hfil
 #
 #
 #    def savall(self, sfil, dat):
-#                
+#
 #        _np.savetxt(sfil, dat)
 #        return 1
-#    # enddef openclose                
+#    # enddef openclose
 #
 #    if isinstance(var, str):
 #        fmt = '%s'
