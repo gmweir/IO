@@ -239,6 +239,7 @@ class ReportInterface(object):
                                 h5file, path)
 
             elif isinstance(item, _h5._hl.group.Group):
+#                print('entering group %s'%(key,))
                 ans[key] = cls.__recursively_load_dict_contents_from_group__(
                                 h5file, path + '/' + key + '/')
         return ans
