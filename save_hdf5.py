@@ -93,6 +93,9 @@ class ReportInterface(object):
         if isinstance(item, (float,)):
             item = _np.float64(item)
 #        if isinstance(item, (type(_np.nan)))
+        if isinstance(item, (Struct,)):
+            item.StructObject = True
+            item = item.dict_from_class()
         if isinstance(item, (list,)) and len(item)==0:
             return item
         try:
@@ -105,7 +108,6 @@ class ReportInterface(object):
             item = [cls.__fixlist(ii) for ii in item]
             item = _np.asarray(item)
             item = _np.atleast_1d(item)
-
         return item
 
     @classmethod
@@ -150,7 +152,7 @@ class ReportInterface(object):
                    # item = _np.atleast_1d(item)
                    grp = h5file[key] if key in h5file else h5file.create_group(key)
                    #cls.__recursively_save_dict_contents_to_group__(grp, item.tolist())
-                   for ii in range(len(item)):
+                   for ii in range(_np.atleast_1d(len(item))):
                        keyii = key + "/list" + str(ii) + "/"
                        grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
                        cls.__recursively_save_dict_contents_to_group__(grp, item[ii])
@@ -169,7 +171,7 @@ class ReportInterface(object):
                     h5file.create_dataset(key, data=item, dtype=item.dtype)
 
                     try:
-                        if not _np.all(h5file[key].value == item):
+                        if not _np.all(h5file[key].value == item) and not _np.isnan(_np.atleast_1d(item)).any():
                             raise ValueError('The data representation in the HDF5 file does not match the original dict.')
                     except:
                         print('# == FAILURE == #:', h5file, key, item, h5file[key])
@@ -202,8 +204,13 @@ class ReportInterface(object):
         ni = len(h5file[path])
         ans = []
         for ii in range(ni):
-            ans.append( cls.__recursively_load_dict_contents_from_group__(
-                h5file, path + '/' + 'list'+str(ii) + '/') )
+            try:
+                ans.append( cls.__recursively_load_dict_contents_from_group__(
+                    h5file, path + '/' + 'list'+str(ii) + '/') )
+            except:
+                pass
+#                print(1)   # TODO:!  this is due to sometimes saving a Struct object (or multiple) in a list
+            # end try
         # end for
         return _np.asarray(ans)
 
@@ -232,16 +239,25 @@ class ReportInterface(object):
                     # end for
                     ans[key] = _np.asarray(tmp)
                 else:
-                    ans[key] = item.value
-                # endif
+                    try:
+                        ans[key] = item.value
+                    except:
+                        print(1)
+                    # end try
             elif len(key)>3 and key[0:4] == 'list':
+#                ans[key[4:]] = cls.__iteratively_load_dict_contents_from_list__(
                 ans = cls.__iteratively_load_dict_contents_from_list__(
                                 h5file, path)
-
             elif isinstance(item, _h5._hl.group.Group):
 #                print('entering group %s'%(key,))
                 ans[key] = cls.__recursively_load_dict_contents_from_group__(
                                 h5file, path + '/' + key + '/')
+        # end for
+
+        if type(ans)==type({}) and 'StructObject' in ans:
+            ans.pop('StructObject')
+            ans = Struct(ans)
+        # end if
         return ans
 
 # ========================================================================== #
@@ -271,6 +287,8 @@ def loadHDF5data(sfilename, path=None, sepfield=False, verbose=True):
 
 
 def test():
+    tst = Struct()
+    tst.a = 0;    tst.b = 1
     ex = {
         'name': 'GMW\xb0' + chr(255),
         'exdict': {'str': 'new'},
@@ -292,7 +310,8 @@ def test():
         'strarray': _np.asarray(['w7x_ref_175', 'w7x_ref_175']),
         'nan': _np.nan,
         'nan_array': _np.nan*_np.ones( (5,1), dtype=_np.float64),
-        'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1))
+        'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1)),
+#        'objectlist':[tst],
     }
     print('ex')
     filename = 'foo.hdf5'
