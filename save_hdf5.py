@@ -111,7 +111,7 @@ class ReportInterface(object):
         return item
 
     @classmethod
-    def __recursively_save_dict_contents_to_group__(cls, h5file, dic):
+    def __recursively_save_dict_contents_to_group__(cls, h5file, dic, verbose=True):
         """..."""
         # argument type checking
         if not isinstance(dic, dict):
@@ -130,7 +130,7 @@ class ReportInterface(object):
             try:
                 if isinstance(item, (bytes,)):
                     # save string types (byte-strings)
-                    print(h5file, key, item)
+                    if verbose:   print(h5file, key, item)  # end if
                     grp = (h5file[key] if key in h5file
                            else h5file.create_dataset(key, data=item, dtype=item.dtype))
 
@@ -138,7 +138,7 @@ class ReportInterface(object):
                 elif isinstance(item, dict): # or isinstance(item.any(), dict):
                     print('Dictionary:', h5file, key)
                     grp = h5file[key] if key in h5file else h5file.create_group(key)
-                    cls.__recursively_save_dict_contents_to_group__(grp, item)
+                    cls.__recursively_save_dict_contents_to_group__(grp, item, verbose=verbose)
 
                 # other types cannot be saved and will result in an error
                 elif isinstance(item, (Struct, )):
@@ -146,7 +146,7 @@ class ReportInterface(object):
     #                print('Skipping the user defined class with internal methods')
                     grp = h5file[key] if key in h5file else h5file.create_group(key)
                     cls.__recursively_save_dict_contents_to_group__(
-                         grp, item.dict_from_class() )
+                         grp, item.dict_from_class(), verbose=verbose)
 
                 elif isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0], (dict,)):
                    # item = _np.atleast_1d(item)
@@ -155,13 +155,13 @@ class ReportInterface(object):
                    for ii in range(_np.atleast_1d(len(item))):
                        keyii = key + "/list" + str(ii) + "/"
                        grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
-                       cls.__recursively_save_dict_contents_to_group__(grp, item[ii])
+                       cls.__recursively_save_dict_contents_to_group__(grp, item[ii], verbose=verbose)
                    # end for
 
                 elif isinstance(item, (_np.ScalarType, _np.ndarray)):
                 # elif isinstance(item, (_np.ScalarType,)):
                     # print(key, item, type(key), type(item))
-                    print(h5file, key, item)
+                    if verbose:   print(h5file, key, item)    # end if
 
                     # If the key already exists in the file, delete it for overwriting
                     if key in h5file:
@@ -178,14 +178,16 @@ class ReportInterface(object):
                     # endtry
 
                 elif item is None:
-                    print(h5file, key, item)
+                    if verbose:   print(h5file, key, item)    # end if
                     h5file[key] = _np.asarray([])
 
                 else:
-                    print('Cannot save key: '+key)
+                    if verbose:
+                        print('Cannot save key: '+key)
                     raise ValueError('Cannot save %s type.' % type(item))
             except:
-                print('What?')
+                if verbose:
+                    print('What?')
             # end try
     @classmethod
     def __load_dict_from_hdf5__(cls, filename, path=None):
