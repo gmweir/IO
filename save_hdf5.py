@@ -244,7 +244,8 @@ class ReportInterface(object):
                     try:
                         ans[key] = item.value
                     except:
-                        print(1)
+#                        print(1)
+                        pass
                     # end try
             elif len(key)>3 and key[0:4] == 'list':
 #                ans[key[4:]] = cls.__iteratively_load_dict_contents_from_list__(
