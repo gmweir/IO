@@ -49,7 +49,13 @@ class ReportInterface(object):
         else:
             with _h5.File(filename, 'w') as h5file:
                 cls.__recursively_save_dict_contents_to_group__(h5file, dic)
-        #endif
+        # end if
+
+        try:
+            h5file.close()
+        except:
+            pass
+        # end if
 
     def __bytesit(item):
         if item is '':
@@ -111,7 +117,7 @@ class ReportInterface(object):
         return item
 
     @classmethod
-    def __recursively_save_dict_contents_to_group__(cls, h5file, dic, verbose=True):
+    def __recursively_save_dict_contents_to_group__(cls, h5file, dic, verbose=False):
         """..."""
         # argument type checking
         if not isinstance(dic, dict):
@@ -198,7 +204,14 @@ class ReportInterface(object):
             path = '/'+path
         # end if
         with _h5.File(filename, 'r') as h5file:
-            return cls.__recursively_load_dict_contents_from_group__(h5file, path)
+#            return cls.__recursively_load_dict_contents_from_group__(h5file, path)
+            out = cls.__recursively_load_dict_contents_from_group__(h5file, path)
+        try:
+            h5file.close()
+        except:
+            pass
+        # end if
+        return out
 
     @classmethod
     def __iteratively_load_dict_contents_from_list__(cls, h5file, path):
@@ -265,7 +278,7 @@ class ReportInterface(object):
 
 # ========================================================================== #
 
-def loadHDF5data(sfilename, path=None, sepfield=False, verbose=True):
+def loadHDF5data(sfilename, path=None, sepfield=False, verbose=False):
 
     HDF5data = ReportInterface.__load_dict_from_hdf5__(sfilename, path)
 
