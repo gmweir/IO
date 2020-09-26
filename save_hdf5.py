@@ -133,6 +133,9 @@ class ReportInterface(object):
             # Go through each data type and convert it to H5PY compatible
             item = cls.__fixlist(item)
 
+            # if key == 'dictarray':
+            #     print('debugging')
+
             try:
                 if isinstance(item, (bytes,)):
                     # save string types (byte-strings)
@@ -158,11 +161,18 @@ class ReportInterface(object):
                    # item = _np.atleast_1d(item)
                    grp = h5file[key] if key in h5file else h5file.create_group(key)
                    #cls.__recursively_save_dict_contents_to_group__(grp, item.tolist())
-                   for ii in range(_np.atleast_1d(len(item))):
-                       keyii = key + "/list" + str(ii) + "/"
-                       grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
-                       cls.__recursively_save_dict_contents_to_group__(grp, item[ii], verbose=verbose)
-                   # end for
+                   try:
+                       for ii in range(_np.atleast_1d(len(item))):
+                           keyii = key + "/list" + str(ii) + "/"
+                           grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
+                           cls.__recursively_save_dict_contents_to_group__(grp, item[ii], verbose=verbose)
+                       # end for
+                   except:
+                       for ii in range(len(item)):
+                           keyii = key + "/list" + str(ii) + "/"
+                           grp = h5file[keyii] if keyii in h5file else h5file.create_group(keyii)
+                           cls.__recursively_save_dict_contents_to_group__(grp, item[ii], verbose=verbose)
+                       # end for
 
                 elif isinstance(item, (_np.ScalarType, _np.ndarray)):
                 # elif isinstance(item, (_np.ScalarType,)):
