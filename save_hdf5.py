@@ -39,6 +39,12 @@ class ReportInterface(object):
 
     # . ..more details about this class...
 
+    def __init__(self, dic=None, filename=None):
+        if dic is not None and filename is not None:
+            self.__save_dict_to_hdf5__(dic, filename)
+        # end if
+    # end def
+
     @classmethod
     def __save_dict_to_hdf5__(cls, dic, filename):
         """..."""
@@ -104,6 +110,8 @@ class ReportInterface(object):
             item = item.dict_from_class()
         if isinstance(item, (list,)) and len(item)==0:
             return item
+#        if isinstance(item, (_np.ndarray,)) and len(item)==0:
+#            return item.tolist()
         try:
             if isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0],(_np.str_,)):
                 item = [cls.__fixlist(ii) for ii in item] #item.tolist()
@@ -133,8 +141,9 @@ class ReportInterface(object):
             # Go through each data type and convert it to H5PY compatible
             item = cls.__fixlist(item)
 
+#            if key == 'empty_list':
             # if key == 'dictarray':
-            #     print('debugging')
+#                 print('debugging')
 
             try:
                 if isinstance(item, (bytes,)):
@@ -156,6 +165,12 @@ class ReportInterface(object):
                     grp = h5file[key] if key in h5file else h5file.create_group(key)
                     cls.__recursively_save_dict_contents_to_group__(
                          grp, item.dict_from_class(), verbose=verbose)
+
+                elif isinstance(item, (_np.ndarray,)) and len(_np.atleast_1d(item))==0:
+                    # print('empty numpy array or list')
+                    if verbose:   print(h5file, key, item)    # end if
+                    h5file.create_dataset(key, data=item, dtype=item.dtype)
+
 
                 elif isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0], (dict,)):
                    # item = _np.atleast_1d(item)
@@ -197,6 +212,8 @@ class ReportInterface(object):
                     if verbose:   print(h5file, key, item)    # end if
                     h5file[key] = _np.asarray([])
 
+                elif isinstance(item, list) and len(item)==0:
+                    h5file[key] = item
                 else:
                     if verbose:
                         print('Cannot save key: '+key)
@@ -245,6 +262,8 @@ class ReportInterface(object):
         """..."""
         ans = {}
         for key, item in h5file[path].items():
+#            if key == 'empty_list':
+#                print('debugging')
             if isinstance(item, _h5._hl.dataset.Dataset):
                 if isinstance(item.value, bytes):
                     # print(item.value)
@@ -253,6 +272,8 @@ class ReportInterface(object):
                     else:
                         ans[key] = cls.__unbytesit(item.value)
                     # endif
+                elif item.shape == (0,):
+                    ans[key] = item.value
                 elif isinstance(_np.atleast_1d(item.value)[0], bytes):
                     tmp = []
                     for ii in item:
@@ -337,6 +358,8 @@ def test():
         'nan': _np.nan,
         'nan_array': _np.nan*_np.ones( (5,1), dtype=_np.float64),
         'imaginary_numbers': _np.ones( (5,1), dtype=_np.float64)+ 1j*_np.random.normal(0.0, 1.0, (5,1)),
+        'empty_array':_np.asarray([]),
+        'empty_list':[],
 #        'objectlist':[tst],
     }
     print('ex')
