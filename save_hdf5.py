@@ -145,12 +145,14 @@ class ReportInterface(object):
             # if key == 'dictarray':
 #                 print('debugging')
 
-            try:
+            # try:
+            if 1:
                 if isinstance(item, (bytes,)):
                     # save string types (byte-strings)
                     if verbose:   print(h5file, key, item)  # end if
                     grp = (h5file[key] if key in h5file
-                           else h5file.create_dataset(key, data=item, dtype=item.dtype))
+                            else h5file.create_dataset(key, data=item, dtype=item.dtype))
+                           # else ReportInterface.create_dataset(h5file, item))
 
                 # save dictionaries
                 elif isinstance(item, dict): # or isinstance(item.any(), dict):
@@ -169,8 +171,8 @@ class ReportInterface(object):
                 elif isinstance(item, (_np.ndarray,)) and len(_np.atleast_1d(item))==0:
                     # print('empty numpy array or list')
                     if verbose:   print(h5file, key, item)    # end if
-                    h5file.create_dataset(key, data=item, dtype=item.dtype)
-
+                    # h5file.create_dataset(key, data=item, dtype=item.dtype)
+                    ReportInterface.create_dataset(h5file, key, item)
 
                 elif isinstance(item, (_np.ndarray,)) and isinstance(_np.atleast_1d(item)[0], (dict,)):
                    # item = _np.atleast_1d(item)
@@ -198,9 +200,8 @@ class ReportInterface(object):
                     if key in h5file:
                         del(h5file[key])
                     # end if
-
-                    h5file.create_dataset(key, data=item, dtype=item.dtype,
-                            compression='gzip', compression_opts=9)
+                    # ReportInterface.create_dataset(h5file, key, item)
+                    h5file.create_dataset(key, data=item, dtype=item.dtype)
 
                     try:
                         if not _np.all(h5file[key].value == item) and not _np.isnan(_np.atleast_1d(item)).any():
@@ -219,10 +220,23 @@ class ReportInterface(object):
                     if verbose:
                         print('Cannot save key: '+key)
                     raise ValueError('Cannot save %s type.' % type(item))
-            except:
-                if verbose:
-                    print('What?')
+            # except:
+            #     if verbose:
+            #         print('What?')
             # end try
+
+    # @classmethod
+    def create_dataset(h5file, key, item, **kwargs):
+        compression = kwargs.setdefault('compression', 'gzip')
+        compression_opts = kwargs.setdefault('compression_opts', 9)
+        shuffle = kwargs.setdefault('shuffle', True)
+        if compression is not None:
+            return h5file.create_dataset(key, data=item, dtype=item.dtype, **kwargs)
+        else:
+            return h5file.create_dataset(key, data=item, dtype=item.dtype)
+        # end if
+    # end def create_dataset
+
     @classmethod
     def __load_dict_from_hdf5__(cls, filename, path=None):
         """..."""
