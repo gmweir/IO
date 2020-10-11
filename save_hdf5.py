@@ -145,8 +145,8 @@ class ReportInterface(object):
             # if key == 'dictarray':
 #                 print('debugging')
 
-            # try:
-            if 1:
+            try:
+            # if 1:
                 if isinstance(item, (bytes,)):
                     # save string types (byte-strings)
                     if verbose:   print(h5file, key, item)  # end if
@@ -220,9 +220,9 @@ class ReportInterface(object):
                     if verbose:
                         print('Cannot save key: '+key)
                     raise ValueError('Cannot save %s type.' % type(item))
-            # except:
-            #     if verbose:
-            #         print('What?')
+            except:
+                if verbose:
+                    print('What?')
             # end try
 
     # @classmethod
