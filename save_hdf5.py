@@ -199,7 +199,8 @@ class ReportInterface(object):
                         del(h5file[key])
                     # end if
 
-                    h5file.create_dataset(key, data=item, dtype=item.dtype)
+                    h5file.create_dataset(key, data=item, dtype=item.dtype,
+                            compression='gzip', compression_opts=9)
 
                     try:
                         if not _np.all(h5file[key].value == item) and not _np.isnan(_np.atleast_1d(item)).any():
