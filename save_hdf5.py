@@ -64,7 +64,7 @@ class ReportInterface(object):
         # end if
 
     def __bytesit(item):
-        if item is '':
+        if item == '':
             item = ' '
         # endif
         item = item.encode('ascii', 'xmlcharrefreplace')

@@ -205,7 +205,7 @@ class egDataFormatIO(Struct):
                   self.ValUnit.append(clmd)
 
    def writeFile(self, filename=None, filefmt='LHD', datafmt='%.6E'):
-      if filefmt is 'LHD':
+      if filefmt == 'LHD':
         self.writeHeader(filename)
       else :
         self.writeTitle(filename)
