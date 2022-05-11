@@ -1,6 +1,13 @@
 *__pycache__
+*/__pycache__/*
+*.pytest_cache
+*/.pytest_cache/*
 *Thumbds.db
 *.txt
+*.dat
+*.xml
+*.netcdf
+*.nc
 *.hdf5
 *.hd5
 *.pyc
