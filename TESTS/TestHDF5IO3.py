@@ -182,6 +182,7 @@ if __name__ == "__main__":
         export_to_datadir()
         test_hdf5_export_import()
         for fn in datadir_hdf5:
+            print('testing %s'%(fn,))
             test_import_from_datadir(fn)
     # end try/if
 # end if
