@@ -24,21 +24,37 @@ import collections
 import numbers
 import logging
 from xml.dom.minidom import parseString
+# from pyversion.version import *  # analysis:ignore
 
 
 LOG = logging.getLogger("dicttoxml")
 
-# python 3 doesn't have a unicode type
-try:
-    unicode
-except:
-    unicode = str
+# ================== #
 
-# python 3 doesn't have a long type
 try:
-    long
+    has_long = 'long' in __builtins__#.__dict__.keys()
+    has_unicode = 'unicode' in __builtins__#.__dict__.keys()
 except:
+    has_long = 'long' in __builtins__.__dict__.keys()
+    has_unicode = 'unicode' in __builtins__.__dict__.keys()
+# end try
+
+
+# python 3 doesn't have a unicode type, substitute missing builtins
+if has_unicode:
+    unicode = unicode  # analysis:ignore
+else:
+    unicode = str
+# end if
+
+# python 3 doesn't have a long type, substitute missing builtins
+if has_long:
+    long = long  # analysis:ignore
+else:
     long = int
+# end if
+
+# ================== #
 
 
 def set_debug(debug=True, filename='dicttoxml.log'):
