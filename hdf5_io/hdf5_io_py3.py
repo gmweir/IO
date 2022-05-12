@@ -4,6 +4,9 @@ Created on Wed May 11 12:35:33 2022
 
 @author: gawe
 
+This file has been shamelessly copied from the tenpy hdf5_io module.
+With alterations to make it work for me where I need it.
+
 
 Tools to save and load data (from TeNPy) to disk.
 
@@ -120,7 +123,7 @@ def save(data, filename, mode='w'):
     ============ ===============================
     ending       description
     ============ ===============================
-    .pkl         Pickle without compression
+    .pkl, .pickle Pickle without compression
     ------------ -------------------------------
     .pklz        Pickle with gzip compression.
     ------------ -------------------------------
@@ -137,7 +140,11 @@ def save(data, filename, mode='w'):
         See :py:func:`open` for more details.
     """
     filename = str(filename)
-    if filename.endswith('.pkl'):
+    if filename.endswith('.txt') or filename.endswidth('.dat'):
+        with open(filename, mode=mode) as f:
+            # pickle.dump(data, file))
+            f.write(pickle.dumps(data))
+    elif filename.endswith('.pkl') or filename.endswith('.pickle'):
         with open(filename, mode + 'b') as f:
             pickle.dump(data, f)
     elif filename.endswith('.pklz'):
@@ -166,7 +173,10 @@ def load(filename):
         The object loaded from the file.
     """
     filename = str(filename)
-    if filename.endswith('.pkl'):
+    if filename.endswith('.txt') or filename.endswith('.dat'):
+        with open(filename, 'r') as file:
+            data = pickle.loads(file.read())
+    elif filename.endswith('.pkl') or filename.endswith('.pickle'):
         with open(filename, 'rb') as f:
             data = pickle.load(f)
     elif filename.endswith('.pklz'):
@@ -870,6 +880,8 @@ class Hdf5Loader:
             return in_memo
 
         # determine type of object to be loaded.
+        if 1:
+            print(path)
         type_repr = self.get_attr(h5gr, ATTR_TYPE)
         disp = self.dispatch_load.get(type_repr)
         if disp is None:

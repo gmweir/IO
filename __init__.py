@@ -12,28 +12,27 @@ from __future__ import absolute_import, with_statement, absolute_import, \
 # ========================================================================== #
 # ========================================================================== #
 
-__version__ = "2018.05.24.17"
-__all__ = ['egDataFormatIO','HDF', 'fdf', 'txtutils'] #, 'save_txt']
+__version__ = "2022.05.12.16"
+__all__ = ['lhd_io','hdf5_io', 'fdf_io', 'txtutils'] #, 'save_txt']
 
-from . import egDataFormatIO as lhd_io # analysis:ignore
-from . import HDF as hdf5_io      # analysis:ignore
-from . import fdf as fdf_io       # analysis:ignore
+from . import lhd_io       # analysis:ignore
+from . import hdf5_io      # analysis:ignore
+from . import fdf_io       # analysis:ignore
 from . import txtutils as txt_io  # analysis:ignore
 
-# ======== #
+from .hdf5_io import loadHDF5  # analysis:ignore
+from .lhd_io import egDataFormatIO as eg  # analysis:ignore
+from .fdf_io import Fdf as fdf # analysis:ignore
+from .txtutils import scanf, sscanf, fscanf, ftell, fseek, frewind, fgets, fgetl, findstr  # analysis:ignore
+
+
+# ===================================== #
 
 #  Backwards compatibility  # annoyingly filling the namespace
 #  -->  Needs to be cleaned up
-from . import egDataFormatIO, HDF, fdf , txtutils #save_txt  # analysis:ignore
-from .HDF import save_hdf5   # backwards compatibility
-from .HDF.save_hdf5 import ReportInterface as saveHDF5  # analysis:ignore
-from .HDF.save_hdf5 import loadHDF5data as loadHDF5  # analysis:ignore
-from .egDataFormatIO import egDataFormatIO as eg  # analysis:ignore
-from .fdf import Fdf as fdf # analysis:ignore
-from .txtutils import scanf, sscanf, fscanf, ftell, fseek, frewind, fgets, fgetl, findstr  # analysis:ignore
-
-# ======== #
-
+egDataFormatIO = lhd_io
+save_hdf5 = hdf5_io.__old_save_hdf5
+saveHDF5 = save_hdf5.ReportInterface  # analysis:ignore
 
 # ===================================================================== #
 # ===================================================================== #

@@ -26,13 +26,22 @@ from tenpy
 
 # ========================================================================== #
 # ========================================================================== #
-from __future__ import absolute_import, with_statement, absolute_import, \
+from __future__ import absolute_import, with_statement, \
                        division, print_function, unicode_literals
 
 
+import sys as _sys
 import numpy as _np
 import h5py as _h5
 import os as _os
+
+
+if _sys.version_info < (3,0):
+    import cPickle as pickle
+else:
+    import pickle
+# end if
+
 
 #from scipy.io import savemat #,loadmat,whosmat
 try:
@@ -71,9 +80,9 @@ class ReportInterface(object):
 
     # . ..more details about this class...
 
-    def __init__(self, dic=None, filename=None):
+    def __init__(self, dic=None, filename=None, verbose=False):
         if dic is not None and filename is not None:
-            self.__save_dict_to_hdf5__(dic, filename)
+            self.__save_dict_to_hdf5__(dic, filename, verbose=verbose)
         # end if
     # end def
 
@@ -383,18 +392,53 @@ class ReportInterface(object):
 
         return ans
 
+        # purposefully placed after the return so this is not used at all
         if type(ans)==type({}) and 'StructObject' in ans:
             ans.pop('StructObject')
             ans = Struct(ans)
         # end if
     # end def
+# end class ReportInterface
+
+
+# for readability make the proper class name
+class hdf5_io(ReportInterface):
+
+    @classmethod
+    def loadHDF5(cls, filename, path=None):
+        return cls.__load_dict_from_hdf5__(filename, path=path)
+
+    @classmethod
+    def saveHDF5(cls, filename, dic, verbose=False):
+        cls.__save_dict_to_hdf5__(dic, filename, verbose=verbose)
+
+    # def loadHDF5(self, filename, path=None):
+    #     """
+    #     This auto-loads the data from the dictionary into this object as variables
+    #     """
+    #     self.update(self.__load_dict_from_hdf5__(filename, path=path))
+    # # end def
+
+
+    # def saveHDF5(self, filename, verbose=False):
+    #     """
+    #     This saves the data stored in this object to an hdf5 file
+    #     """
+    #     self.__save_dict_to_hdf5__(self.dict_from_class(), filename, verbose=verbose)
+
+
+    # def update(self, **dic):
+    #     self.__dict__.update(dic)
+
+# end def class hdf5_io
+
 
 # ========================================================================== #
 
 
 def loadHDF5data(sfilename, path=None, sepfield=False, verbose=False):
 
-    HDF5data = ReportInterface.__load_dict_from_hdf5__(sfilename, path)
+    HDF5data = hdf5_io.__load_dict_from_hdf5__(sfilename, path)
 
     if verbose:
         print('### Successfully loaded dictionary from HDF5 file ###')
@@ -409,7 +453,145 @@ def loadHDF5data(sfilename, path=None, sepfield=False, verbose=False):
     # endif
 
     return HDF5data
-#end def load_HDF5
+#end def
+
+
+def saveHDF5data(sfilename, dic, verbose=False):
+    hdf5_io.saveHDF5(sfilename, dic, verbose=verbose)
+# end def
+
+# ========================================================================== #
+
+# Matching the interface to hdf5_io_py2/py3
+def save(data, filename, mode='w'):
+    """Save `data` to file with given `filename`.
+
+    This function guesses the type of the file from the filename ending.
+    Supported endings:
+
+    ============ ===============================
+    ending       description
+    ============ ===============================
+    .pkl, .pickle Pickle without compression
+    ------------ -------------------------------
+    .pklz        Pickle with gzip compression.
+    ------------ -------------------------------
+    .hdf5, .h5   HDF5 file (using `h5py`).
+    ============ ===============================
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file where to save the data.
+    mode : str
+        File mode for opening the file. ``'w'`` for write (discard existing file),
+        ``'a'`` for append (add data to exisiting file).
+        See :py:func:`open` for more details.
+    """
+
+    filename = str(filename)
+    if filename.endswith('.txt') or filename.endswidth('.dat'):
+        with open(filename, mode=mode) as f:
+            # pickle.dump(data, file))
+            f.write(pickle.dumps(data))
+    elif filename.endswith('.pkl') or filename.endswith('.pickle'):
+        with open(filename, mode + 'b') as f:
+            pickle.dump(data, f)
+    elif filename.endswith('.pklz'):
+        import gzip
+        with gzip.open(filename, mode + 'b') as f:
+            pickle.dump(data, f)
+    elif filename.endswith('.hdf5') or filename.endswith('.h5'):
+        saveHDF5data(filename, data)
+    else:
+        raise ValueError("Don't recognise file ending of " + repr(filename))
+
+
+def load(filename):
+    """Load data from file with given `filename`.
+
+    Guess the type of the file from the filename ending, see :func:`save` for possible endings.
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file to load.
+
+    Returns
+    -------
+    data : obj
+        The object loaded from the file.
+    """
+    filename = str(filename)
+    if filename.endswith('.txt') or filename.endswith('.dat'):
+        with open(filename, 'r') as file:
+            data = pickle.loads(file.read())
+    elif filename.endswith('.pkl') or filename.endswith('.pickle'):
+        with open(filename, 'rb') as f:
+            data = pickle.load(f)
+    elif filename.endswith('.pklz'):
+        import gzip
+        with gzip.open(filename, 'rb') as f:
+            data = pickle.load(f)
+    elif filename.endswith('.hdf5') or filename.endswith('.h5'):
+        data = loadHDF5data(filename)
+    else:
+        raise ValueError("Don't recognise file ending of " + repr(filename))
+    return data
+
+# ========================================================================== #
+# ========================================================================== #
+
+
+# def WriteToH5(filename, variable_dict, verbose=True):
+#     """
+#     function to write all variables in the dictionary to an hdf5 file
+#     given a dictionary of variable names and the variables,
+#     the variables will be stored in the given HDF5 file
+
+#     usage example:
+
+#         WriteToH5(fname+'.hdf5', {'gammas':gammas,
+#                           'omegas':omegas,
+#                           'eigenmodes':eigenmodes,
+#                           'locations':locations,
+#                           'm_nums':m_nums,
+#                           'bfields':bfields})
+#     """
+
+#     if filename[-5:] != '.hdf5':
+#         filename=filename+'.hdf5'
+#     # end if
+
+
+#     def code_to_execute():
+#         for var_name in var_names:
+#             dataset = h5f.create_dataset(var_name, data=variable_dict[var_name])
+#         # end for
+#         dt = _h5.special_dtype(vlen=str)
+#         dataset = h5f.create_dataset('var_names', data=var_names, dtype=dt)
+#     # end def
+
+#     var_names = variable_dict.keys()
+#     # if 1:
+#     try:
+#         with _h5.File(filename, 'w') as h5f:
+#             code_to_execute()
+#         # end with open
+#     # else:
+#     except IOError as e:
+#         if verbose:
+#             print('The file %s does not appear to exist or is not accessible')
+#         # end if
+#         raise e
+#     except:
+#         h5f = _h5.File(filename, 'w')
+#         code_to_execute()
+#         h5f.close()
+#     finally:
+#         try: h5f.close()
+#         except: pass
+#     # end try
 
 
 # ========================================================================== #
@@ -430,10 +612,14 @@ def test(verbose=False):
     # endif
 
     ReportInterface.__save_dict_to_hdf5__(ex, filename, verbose=verbose)
-
+    if _os.path.exists(filename):
+        _os.remove(filename)
+    # endif
+    saveHDF5data(filename, ex, verbose=verbose)
 
     # Load and test
-    loaded = ReportInterface.__load_dict_from_hdf5__(filename)
+    # loaded = ReportInterface.__load_dict_from_hdf5__(filename)
+    loaded = hdf5_io.loadHDF5(filename)
     print('loaded using built-in function')
     _np.testing.assert_equal(loaded, ex)
     print('check 1 passed!')

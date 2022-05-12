@@ -130,7 +130,11 @@ def save(data, filename, mode='w'):
         See :py:func:`open` for more details.
     """
     filename = str(filename)
-    if filename.endswith('.pkl'):
+    if filename.endswith('.txt') or filename.endswidth('.dat'):
+        with open(filename, mode) as f:
+            # pickle.dump(data, file))
+            f.write(pickle.dumps(data))
+    elif filename.endswith('.pkl') or filename.endswith('pickle'):
         with open(filename, mode + 'b') as f:
             pickle.dump(data, f)
     elif filename.endswith('.pklz'):
@@ -159,7 +163,10 @@ def load(filename):
         The object loaded from the file.
     """
     filename = str(filename)
-    if filename.endswith('.pkl'):
+    if filename.endswith('.txt') or filename.endswith('.dat'):
+        with open(filename, 'r') as file:
+            data = pickle.loads(file.read())
+    elif filename.endswith('.pkl') or filename.endswith('pickle'):
         with open(filename, 'rb') as f:
             data = pickle.load(f)
     elif filename.endswith('.pklz'):
