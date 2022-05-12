@@ -4,17 +4,19 @@
 Created on Sat Feb  4 10:03:26 2017
 
 @author: weir
+
+This is a MATLAB port
 """
 
 from numpy import arange, array
 import warnings
 
-try: 
+try:
     from debug_ import debug_
 except:
     from warnings import warn
     def debug_(debug, msg='', *args, **kwargs):
-        if str(debug) != '0': warn('attempt to debug ' + msg + 
+        if str(debug) != '0': warn('attempt to debug ' + msg +
               " need boyd's debug_.py to debug most effectively")
 
 debug=1
@@ -25,7 +27,7 @@ typedict = {'int32':'i', 'char':'c', 'float32':'f', 'double':'d', 'int16':'h'}
 typedict.update({'uint32': 'I', 'uint16':'H', 'uint8':'B'})
 
 def fread(file, num, typ):
-    """ Imitate the matlab fread function - 
+    """ Imitate the matlab fread function -
         typ is 'f' for 4 byte float, 'c', i for 2 byte? 'l' for 4 byte?
     """
     from array import array as arr
@@ -38,13 +40,13 @@ def fread(file, num, typ):
         return(''.join(ar.tolist()))
     elif num == 1:
         return(ar[0])
-    else: 
+    else:
         return(ar)
 
 def myseek(fileHandle,bytesLeft,mode,debug=1):
     """ this was misbehaving - probably because it was not marked as binary
     OK now
-    """ 
+    """
     action = ['seeking to', 'skipping']
     if bytesLeft!=0:
         if debug>0: print('%s %d bytes' % (action[mode], bytesLeft))
@@ -60,13 +62,13 @@ def importAgilentBin(inputFile, varargin = None, debug = 1):
     if waveformIndex is not provided, the first waveform will be read
     voltageVector may contain two columns [MIN, MAX]
 
-    
+
 
     """
 
     if type(inputFile) == type(""):
         fileHandle = open(inputFile,'rb')
-    else: 
+    else:
         fileHandle = inputFile
 
     # read file header
@@ -107,10 +109,10 @@ def importAgilentBin(inputFile, varargin = None, debug = 1):
         waveformString = fread(fileHandle, 16, 'char'); bytesLeft = bytesLeft - 16;
         timeTag = fread(fileHandle, 1, 'double'); bytesLeft = bytesLeft - 8;
         segmentIndex = fread(fileHandle, 1, 'uint32'); bytesLeft = bytesLeft - 4;
-        
-        if debug>0: 
+
+        if debug>0:
             print(waveformSelect, varargin)
-            print('Waveform %d, nWaveformBuffers %d, wfstring=%s, headerSize = %d, bytesLeft = %d' % 
+            print('Waveform %d, nWaveformBuffers %d, wfstring=%s, headerSize = %d, bytesLeft = %d' %
                   (waveformIndex,nWaveformBuffers,waveformString, headerSize, bytesLeft))
             print("count={0}, nPoints={1}".format(count, nPoints))
         # skip over any remaining data in the header
@@ -124,11 +126,11 @@ def importAgilentBin(inputFile, varargin = None, debug = 1):
         if (waveformIndex in waveformSelect):
             timeVector = (xIncrement * arange(nPoints)) + xOrigin;
             if timelen != None:
-                if timelen!=len(timeVector): 
+                if timelen!=len(timeVector):
                     print('** Warning: unequal trace lengths {0} != {1} **'.
                           format(timelen,len(timeVector)))
             timelen = len(timeVector)
-    
+
         for bufferIndex in range(nWaveformBuffers):
             # read waveform buffer header
             headerSize = fread(fileHandle, 1, 'int32'); bytesLeft = headerSize - 4;
@@ -172,6 +174,5 @@ def importAgilentBin(inputFile, varargin = None, debug = 1):
 
     fileHandle.close();
     return(timeVector,voltageVector)
-    
-    
-    
+
+
