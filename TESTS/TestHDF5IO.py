@@ -15,7 +15,7 @@ import unittest
 
 # Functions to be tested
 #from ..IO.save_hdf5 import ReportInterface, loadHDF5data
-from IO.save_hdf5 import ReportInterface, loadHDF5data
+from IO.hdf5_io.hdf5_io import ReportInterface, loadHDF5data
 from IO.utils import test_dict
 
 # Required for tests
