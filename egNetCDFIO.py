@@ -15,9 +15,9 @@ import netCDF4 as _nc4
 
 #from scipy.io import savemat #,loadmat,whosmat
 try:
-    from pybaseutils.Struct import Struct
+    from IO.utils import Struct, print_dict, test_dict, versiontuple
 except:
-    from ..Struct import Struct
+    from .utils import Struct, print_dict, test_dict, versiontuple
 # end try
 
 __metaclass__ = type
@@ -25,14 +25,6 @@ __metaclass__ = type
 # ========================================================================== #
 # ========================================================================== #
 
-def print_dict(my_dict, indent=1):
-#    try:
-#        import json as _jsn
-#        _jsn.dumps(my_dict, indent=indent)
-#    except:
-    print(my_dict)
-#    # end if
-# end def
 
 class ReportInterface(object):
     fmt = 'NETCDF4'
