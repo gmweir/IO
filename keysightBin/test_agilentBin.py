@@ -1,5 +1,7 @@
 import unittest
 import numpy as np
+
+# from . import importAgilentBin
 import importAgilentBin
 
 class TestImportFunctions(unittest.TestCase):
