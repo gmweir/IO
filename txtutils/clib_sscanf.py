@@ -211,17 +211,17 @@ def fscanf(fid, fmt, size=None, outform=tuple):
 #    filled = scanf_func(buffer_ctor(fmt), *map(byref, args))
 #    return tuple([args[i].value for i in range(filled)])
 
-def ftell(fid):
-    pass
+# def ftell(fid):
+#     return fid.tell()
 
-def fgetl(fid):
-    pass
+# def fgetl(fid):
+#     pass
 
-def fgets(fid):
-    pass
+# def fgets(fid):
+#     pass
 
-def fseek(fid):
-    pass
+# def fseek(fid):
+#     pass
 
 # ===================================================================== #
 # ===================================================================== #

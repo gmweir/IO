@@ -12,6 +12,13 @@ from __future__ import absolute_import, with_statement, absolute_import, \
                        division, print_function, unicode_literals
 import sys
 
+
+try:
+    from IO.utils import Struct
+except:
+    from ..utils import Struct
+# end try
+
 __metaclass__ = type
 
 
@@ -177,58 +184,58 @@ def printv(x, s=''):
 # ========================================================================== #
 
 
-#class txtdata(_pyut.Struct):
-#    """
-#    Class for saving data to a text file
-#    - sfilname - str - File name (one txt file)
-#            OR - list - List of file names (multiple txt files)
-#    - datain   - object - data structure
-#            OR - list - List of data structures (multiple txt files)
-#    """
-#    def __init__(self, sfilname=None, datain=None):
-#        self.sfilname = sfilname
-#        self.data = datain
-#        if (sfilname is not None) and (datain is not None):
-#            self.__runsav__()
-#        # endif
-#    # end def __init__
+class txtdata(Struct):
+    """
+    Class for saving data to a text file
+    - sfilname - str - File name (one txt file)
+            OR - list - List of file names (multiple txt files)
+    - data   - object - data structure
+            OR - list - List of data structures (multiple txt files)
+    """
+    def __init__(self, filename=None, data=None):
+        self.filename = filename
+        self.data = data
+        if (filename is not None) and (data is not None):
+            self.__runsav__()
+        # endif
+    # end def __init__
+
+    def __runsav__(self):
+        if isinstance(filename, list):
+            self.nfiles = len(filename)
+            self.savmult(sfilname, datain)
+        else:
+            self.nfils = 1
+            self.savall(sfilname, datain)
+        # endif
+    # end def __runsav__
+
+#    def mkfil(self, sfil):
+#        """
+#        Make the text file that will hold data
+#        input:
+#            sfil - str - text file name
+#        output:
+#            hfil - handle - Handle to open text file
+#        """
 #
-#    def __runsav__(self):
-#        if isinstance(sfilname, list):
-#            self.nfils = len(sfilname)
-#            self.savmult(sfilname, datain)
-#        else:
-#            self.nfils = 1
-#            self.savall(sfilname, datain)
-#        # endif
-#    # end def __runsav__
-#
-##    def mkfil(self, sfil):
-##        """
-##        Make the text file that will hold data
-##        input:
-##            sfil - str - text file name
-##        output:
-##            hfil - handle - Handle to open text file
-##        """
-##
-##        return hfil
-#
-#
-#    def savall(self, sfil, dat):
-#
-#        _np.savetxt(sfil, dat)
-#        return 1
-#    # enddef openclose
-#
-#    if isinstance(var, str):
-#        fmt = '%s'
-#    elif isinstance(var, float):
-#        fmt = '%f'
-#    elif isinstance(var, int):
-#        fmt = '%i'
-#    elif isinstance(var, )
-## end class txtdata()
+#        return hfil
+
+
+    def savall(self, sfil, dat):
+
+        _np.savetxt(sfil, dat)
+        return 1
+    # enddef openclose
+
+    if isinstance(var, str):
+        fmt = '%s'
+    elif isinstance(var, float):
+        fmt = '%f'
+    elif isinstance(var, int):
+        fmt = '%i'
+    elif isinstance(var, )
+# end class txtdata()
 
 
 

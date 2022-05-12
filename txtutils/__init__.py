@@ -15,17 +15,18 @@
 from __future__ import absolute_import, with_statement, absolute_import, \
                        division, print_function, unicode_literals
 
-__version__ = "2019.07.16.19"
+__version__ = "2022.05.11.14"
+
+from . import base   # analysis:ignore
+from .base import ftell, fseek, frewind, fgets, fgetl, findstr   # analysis:ignore
 
 try:
     #     The functions in this try block requires the standard C library
     #        full power c!
     from . import clib_sscanf   # analysis:ignore
     from .clib_sscanf import scanf, sscanf, fscanf   # analysis:ignore
-    from .clib_sscanf import ftell, fseek, frewind, fgets, fgetl   # analysis:ignore
 except:
-    from . import base   # analysis:ignore
-    from .base import ftell, fseek, frewind, fgets, fgetl, findstr   # analysis:ignore
+    # No c-library found on path
 
     try:
         # use a tiny pure python implementation with pure python
@@ -33,6 +34,7 @@ except:
         from . import mini_sscanf   # analysis:ignore
         from .mini_sscanf import scanf, sscanf, fscanf   # analysis:ignore
     except:
+        # pure python version is a bit faster than the matlab-like inmplementation
 
         try:
             # use the MATLAB like implementation
