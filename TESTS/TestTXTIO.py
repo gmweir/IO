@@ -13,7 +13,7 @@ from __future__ import absolute_import, with_statement, absolute_import, \
 import unittest
 
 # Functions to be tested
-from IO.egDataFormatIO import egDataFormatIO
+from IO.lhd_io import egDataFormatIO
 
 # Required for tests
 import numpy as _np

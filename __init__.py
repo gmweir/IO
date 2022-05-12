@@ -20,7 +20,7 @@ from . import hdf5_io      # analysis:ignore
 from . import fdf_io       # analysis:ignore
 from . import txtutils as txt_io  # analysis:ignore
 
-from .hdf5_io import loadHDF5  # analysis:ignore
+from .hdf5_io import loadHDF5, ReportInterface  # analysis:ignore
 from .lhd_io import egDataFormatIO as eg  # analysis:ignore
 from .fdf_io import Fdf as fdf # analysis:ignore
 from .txtutils import scanf, sscanf, fscanf, ftell, fseek, frewind, fgets, fgetl, findstr  # analysis:ignore
@@ -30,9 +30,9 @@ from .txtutils import scanf, sscanf, fscanf, ftell, fseek, frewind, fgets, fgetl
 
 #  Backwards compatibility  # annoyingly filling the namespace
 #  -->  Needs to be cleaned up
-egDataFormatIO = lhd_io
-save_hdf5 = hdf5_io.__old_save_hdf5
-saveHDF5 = save_hdf5.ReportInterface  # analysis:ignore
+from . import lhd_io as egDataFormatIO
+from .hdf5_io import hdf5_io as save_hdf5
+
 
 # ===================================================================== #
 # ===================================================================== #
