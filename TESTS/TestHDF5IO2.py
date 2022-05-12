@@ -13,17 +13,17 @@ s.  https://github.com/tenpy/hdf5_io.git
 """Test output to and import from hdf5."""
 
 import os
-import types
 import pytest
 import warnings
 import tempfile
 import numpy as np
 import h5py
 
+
 try:
-    from IO.hdf5_io import hdf5_io_py3 as hdf5_io  # the local version
+    from IO.hdf5_io import hdf5_io_py2 as hdf5_io  # the local version
 except:
-    from ..hdf5_io import hdf5_io_py3 as hdf5_io
+    from ..hdf5_io import hdf5_io_py2 as hdf5_io
 # end try
 
 
@@ -70,7 +70,7 @@ def gen_example_data():
             (1, 2): '3'
         },
         'exportable': hdf5_io.Hdf5Exportable(),
-        'range': range(2, 8, 3),
+        'range': xrange(2, 8, 3),
         'dtypes': [np.dtype("int64"),
                    np.dtype([('a', np.int32, 8), ('b', np.float64, 5)])],
     }
@@ -101,22 +101,18 @@ def assert_equal_data(data_imported, data_expected, max_recursion_depth=10):
         np.testing.assert_array_equal(data_imported, data_expected)
     elif isinstance(data_expected, (int, float, np.int64, np.float64, bool)):
         assert data_imported == data_expected
-    elif isinstance(data_expected, range):
+    elif isinstance(data_expected, xrange):
         assert tuple(data_imported) == tuple(data_expected)
-    elif isinstance(data_expected, types.FunctionType):
-        # we test dump functions as global instances which are unique!
-        assert data_imported is data_expected
 
 
 def export_to_datadir():
-    filename = os.path.join(datadir, "exported_python3.hdf5")
+    filename = os.path.join(datadir, "exported_python2.hdf5")
 
     data = gen_example_data()
     with h5py.File(filename, 'w') as f:
         hdf5_io.save_to_hdf5(f, data)
 
 
-@pytest.mark.filterwarnings(r'ignore:Hdf5Saver.* object of type.*:UserWarning')
 def test_hdf5_export_import():
     """Try subsequent export and import to pickle."""
     data = gen_example_data()
@@ -125,18 +121,18 @@ def test_hdf5_export_import():
         'global_function': dummy_function,
         'global_class': DummyClass,
         'instance': dc,
-        'method': dc.dummy_method,
+        # 'method': dc.dummy_method,  # python 2.7 doesn't support pickling methods
         'excluded_from_load': np.arange(3.),
     })
     data_with_ignore = data.copy()
     data_with_ignore['ignore_save'] = hdf5_io.Hdf5Ignored()
-    with tempfile.TemporaryDirectory() as tdir:
-        filename = 'test.hdf5'
-        with h5py.File(os.path.join(tdir, filename), 'w') as f:
+    with tempfile.TemporaryFile() as tf:
+        with h5py.File(tf, 'w') as f:
             hdf5_io.save_to_hdf5(f, data_with_ignore)
             f['ignore_load'] = "ignore_during_load"
             f['ignore_load'].attrs[hdf5_io.ATTR_TYPE] = hdf5_io.REPR_IGNORED
-        with h5py.File(os.path.join(tdir, filename), 'r') as f:
+        tf.seek(0)  # reset pointer to beginning of file for reading
+        with h5py.File(tf, 'r') as f:
             data_imported = hdf5_io.load_from_hdf5(f,
                                                    ignore_unknown=False,
                                                    exclude=['/excluded_from_load'])
@@ -150,11 +146,6 @@ def test_hdf5_export_import():
 
     assert_equal_data(data_imported, data)
 
-    # assert that the method points to the correct object
-    assert len(data['instance'].data) == 0
-    data['method'](12345)
-    assert len(data['instance'].data) == 1
-
 
 @pytest.mark.parametrize('fn', datadir_hdf5)
 def test_import_from_datadir(fn):
@@ -166,7 +157,6 @@ def test_import_from_datadir(fn):
             data = hdf5_io.load_from_hdf5(f)
     data_expected = gen_example_data()
     assert_equal_data(data, data_expected)
-
 
 # ========================================================================= #
 # ========================================================================= #
